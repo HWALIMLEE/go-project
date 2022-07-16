@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/hwalim/go-project/bank_and_dictionary_proj/banking/banking"
+	"github.com/hwalim/go-project/bank_and_dictionary_proj/banking"
 )
 
 func main() {
-	account := banking.Account{Owner: "hwalim", Balance: 1000}
+	account := banking.Account{Owner: "hwalim", Balance: 10000}
 	fmt.Println(account)
 }
