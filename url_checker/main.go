@@ -6,10 +6,17 @@ import (
 	"net/http"
 )
 
+type requestResult struct {
+	url    string
+	status string
+}
+
 var errRequestFailed = errors.New("Request failed")
 
 func main() {
-	c := make(chan error)
+	c := make(chan requestResult)
+	results := map[string]string{} // {}적어줌으로써 초기화해야 사용가능 or make 사용
+	// var results = make(map[string]string)
 	urls := []string{
 		"https://www.airbnb.com/",
 		"https://www.google.com/",
@@ -21,29 +28,24 @@ func main() {
 		"https://www.instagram.com/",
 		"https://academy.nomadcoders.co/",
 	}
-	results := map[string]string{} // {}적어줌으로써 초기화해야 사용가능 or make 사용
-	// var results = make(map[string]string)
 	for _, url := range urls {
 		go hitURL(url, c)
 	}
 	for i := 0; i < len(urls); i++ {
-		result := "OK"
-		if <-c != nil {
-			result = "FAILED"
-		}
-		results[urls[i]] = result
+		result := <-c
+		results[result.url] = result.status
 	}
-	for url, result := range results {
-		fmt.Println(url, result)
+	for url, status := range results {
+		fmt.Println(url, status)
 	}
 }
 
-func hitURL(url string, c chan error) {
+func hitURL(url string, c chan<- requestResult) { // 데이터를 받을 순 없고 보낼 수만 있다.(send-only)
 	fmt.Println("Checking:", url)
 	resp, err := http.Get(url)
+	status := "OK"
 	if err != nil || resp.StatusCode >= 400 {
-		fmt.Println("url:", url, "err:", err, "resp.StatusCode:", resp.StatusCode)
-		c <- errRequestFailed
+		status = "FAILED"
 	}
-	c <- nil
+	c <- requestResult{url: url, status: status}
 }
