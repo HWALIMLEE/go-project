@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -20,6 +21,7 @@ type extractedJob struct {
 var baseURL string = "https://kr.indeed.com/jobs?q=python&limit=50"
 
 func main() {
+	start := time.Now()
 	var jobs []extractedJob
 	totalPages := getPages()
 
@@ -29,7 +31,8 @@ func main() {
 	}
 	writeJobs(jobs)
 	fmt.Println("Donej, extracted", len(jobs))
-
+	end := time.Now()
+	fmt.Println("Time:", end.Sub(start))
 }
 
 func writeJobs(jobs []extractedJob) {
