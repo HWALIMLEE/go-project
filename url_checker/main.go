@@ -9,6 +9,7 @@ import (
 var errRequestFailed = errors.New("Request failed")
 
 func main() {
+	c := make(chan error)
 	urls := []string{
 		"https://www.airbnb.com/",
 		"https://www.google.com/",
@@ -23,25 +24,26 @@ func main() {
 	results := map[string]string{} // {}적어줌으로써 초기화해야 사용가능 or make 사용
 	// var results = make(map[string]string)
 	for _, url := range urls {
+		go hitURL(url, c)
+	}
+	for i := 0; i < len(urls); i++ {
 		result := "OK"
-		err := hitURL(url)
-		if err != nil {
+		if <-c != nil {
 			result = "FAILED"
 		}
-		results[url] = result
+		results[urls[i]] = result
 	}
 	for url, result := range results {
 		fmt.Println(url, result)
 	}
 }
 
-func hitURL(url string) error {
+func hitURL(url string, c chan error) {
 	fmt.Println("Checking:", url)
 	resp, err := http.Get(url)
 	if err != nil || resp.StatusCode >= 400 {
-		fmt.Println(err)
-		fmt.Println(resp.StatusCode)
-		return errRequestFailed
+		fmt.Println("url:", url, "err:", err, "resp.StatusCode:", resp.StatusCode)
+		c <- errRequestFailed
 	}
-	return nil
+	c <- nil
 }
